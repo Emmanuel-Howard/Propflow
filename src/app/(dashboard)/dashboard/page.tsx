@@ -7,15 +7,17 @@ import { QuickActions } from '@/components/dashboard/quick-actions'
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#F8F9FA]">
       <Header title="Dashboard" />
 
-      <div className="p-6 space-y-6">
+      <div className="p-6 lg:p-8 space-y-6">
         {/* Metrics Overview */}
-        <MetricsCards />
+        <section>
+          <MetricsCards />
+        </section>
 
-        {/* Charts and Campaign Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Charts and Quick Actions */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Performance Chart - Takes 2 columns */}
           <div className="lg:col-span-2">
             <PerformanceChart />
@@ -25,13 +27,13 @@ export default function DashboardPage() {
           <div>
             <QuickActions />
           </div>
-        </div>
+        </section>
 
         {/* Campaign Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <RecentCampaignCard />
           <NextCampaignCard />
-        </div>
+        </section>
       </div>
     </div>
   )

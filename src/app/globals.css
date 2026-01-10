@@ -1,13 +1,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
-  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-playfair);
+  --font-accent: var(--font-lora);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -47,73 +46,68 @@
 }
 
 :root {
+  /* Propflow Premium Light Theme */
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
 
-.dark {
-  /* Propflow Dark Theme - Dark Blue & Gold */
-  --background: #020617; /* slate-950 */
-  --foreground: #f8fafc; /* slate-50 */
-  --card: #0f172a; /* slate-900 */
-  --card-foreground: #f8fafc;
-  --popover: #0f172a;
-  --popover-foreground: #f8fafc;
-  --primary: #1e3a5f; /* Primary dark blue */
-  --primary-foreground: #ffffff;
-  --secondary: #1e293b; /* slate-800 */
-  --secondary-foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8; /* slate-400 */
-  --accent: #d4af37; /* Gold accent */
-  --accent-foreground: #0f172a;
-  --destructive: #ef4444;
-  --border: #334155; /* slate-700 */
-  --input: #334155;
-  --ring: #d4af37; /* Gold ring */
-  --chart-1: #1e3a5f; /* Dark blue */
-  --chart-2: #d4af37; /* Gold */
-  --chart-3: #10b981; /* Emerald */
-  --chart-4: #3b82f6; /* Blue */
-  --chart-5: #8b5cf6; /* Violet */
-  --sidebar: #0f172a;
-  --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #1e3a5f;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1e293b;
-  --sidebar-accent-foreground: #f8fafc;
-  --sidebar-border: #334155;
-  --sidebar-ring: #d4af37;
+  /* Backgrounds */
+  --background: #FFFFFF;
+  --foreground: #000000;
+
+  /* Cards */
+  --card: #FFFFFF;
+  --card-foreground: #000000;
+
+  /* Popovers */
+  --popover: #FFFFFF;
+  --popover-foreground: #000000;
+
+  /* Primary - Rich Green */
+  --primary: #083E33;
+  --primary-foreground: #FFFFFF;
+
+  /* Secondary - Light neutral */
+  --secondary: #F8F9FA;
+  --secondary-foreground: #000000;
+
+  /* Muted */
+  --muted: #F1F3F4;
+  --muted-foreground: #5F6368;
+
+  /* Accent - Warm Gold */
+  --accent: #D4AF37;
+  --accent-foreground: #000000;
+
+  /* Destructive */
+  --destructive: #DC3545;
+
+  /* Borders & Inputs */
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: #083E33;
+
+  /* Charts - Green & Gold palette */
+  --chart-1: #083E33;
+  --chart-2: #D4AF37;
+  --chart-3: #0A5C4A;
+  --chart-4: #B8960C;
+  --chart-5: #0D7A63;
+
+  /* Sidebar - Green gradient sidebar */
+  --sidebar: #083E33;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #D4AF37;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: rgba(255, 255, 255, 0.1);
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #D4AF37;
+
+  /* Custom Propflow colors */
+  --green-start: #083E33;
+  --green-end: rgba(8, 62, 51, 0.85);
+  --gold: #D4AF37;
+  --gold-light: #E5C76B;
+  --gold-dark: #B8960C;
 }
 
 @layer base {
@@ -125,22 +119,56 @@
   }
 }
 
-/* Custom Propflow Styles */
+/* Typography */
 @layer utilities {
+  .font-heading {
+    font-family: var(--font-playfair), Georgia, 'Times New Roman', serif;
+  }
+  .font-body {
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+  .font-accent {
+    font-family: var(--font-lora), Georgia, serif;
+  }
+
+  /* Propflow Brand Colors */
   .text-gold {
-    color: #d4af37;
+    color: #D4AF37;
   }
   .bg-gold {
-    background-color: #d4af37;
+    background-color: #D4AF37;
   }
   .border-gold {
-    border-color: #d4af37;
+    border-color: #D4AF37;
   }
-  .text-primary-blue {
-    color: #1e3a5f;
+  .text-green {
+    color: #083E33;
   }
-  .bg-primary-blue {
-    background-color: #1e3a5f;
+  .bg-green {
+    background-color: #083E33;
+  }
+  .border-green {
+    border-color: #083E33;
+  }
+
+  /* Premium Green Gradient */
+  .bg-green-gradient {
+    background: linear-gradient(135deg, #083E33 0%, rgba(8, 62, 51, 0.85) 100%);
+  }
+
+  /* Gold gradient for special elements */
+  .bg-gold-gradient {
+    background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%);
+  }
+
+  /* Subtle card shadow */
+  .shadow-card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Elevated shadow for hover states */
+  .shadow-elevated {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 8px 24px rgba(0, 0, 0, 0.06);
   }
 }
 
@@ -149,21 +177,42 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Custom scrollbar for dark theme */
-.dark ::-webkit-scrollbar {
+/* Custom scrollbar for light theme */
+::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-.dark ::-webkit-scrollbar-track {
-  background: #1e293b;
+::-webkit-scrollbar-track {
+  background: #F1F3F4;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: #475569;
+::-webkit-scrollbar-thumb {
+  background: #C4C7CC;
   border-radius: 4px;
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+::-webkit-scrollbar-thumb:hover {
+  background: #9AA0A6;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #F1F3F4 25%, #E5E7EB 50%, #F1F3F4 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }

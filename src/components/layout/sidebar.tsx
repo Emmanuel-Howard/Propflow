@@ -30,25 +30,27 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 h-screen bg-slate-900 border-r border-slate-800 transition-all duration-300',
+        'fixed left-0 top-0 z-40 h-screen bg-gradient-to-b from-[#083E33] to-[#062d25] border-r border-[#0a4d3f] transition-all duration-300',
         collapsed ? 'w-16' : 'w-64'
       )}
     >
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex h-16 items-center justify-between px-4 border-b border-slate-800">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#1e3a5f] to-[#2a4a6f] rounded-lg flex items-center justify-center flex-shrink-0">
-              <span className="text-[#d4af37] font-bold text-lg">P</span>
+        <div className="flex h-16 items-center justify-between px-4 border-b border-white/10">
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-[#D4AF37] rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg">
+              <span className="text-[#083E33] font-heading font-bold text-xl">P</span>
             </div>
             {!collapsed && (
-              <span className="text-xl font-semibold text-white">Propflow</span>
+              <span className="text-xl font-heading font-semibold text-white tracking-tight">
+                Propflow
+              </span>
             )}
           </Link>
           <Button
             variant="ghost"
             size="icon"
-            className="text-slate-400 hover:text-white hover:bg-slate-800"
+            className="text-white/60 hover:text-white hover:bg-white/10"
             onClick={() => setCollapsed(!collapsed)}
           >
             {collapsed ? (
@@ -60,7 +62,7 @@ export function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-2 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-6 space-y-1">
           {navigation.map((item) => {
             const isActive = pathname.startsWith(item.href)
             return (
@@ -68,13 +70,16 @@ export function Sidebar() {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                   isActive
-                    ? 'bg-[#1e3a5f] text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    ? 'bg-[#D4AF37] text-[#083E33] shadow-md'
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
                 )}
               >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
+                <item.icon className={cn(
+                  'h-5 w-5 flex-shrink-0',
+                  isActive ? 'text-[#083E33]' : ''
+                )} />
                 {!collapsed && <span>{item.name}</span>}
               </Link>
             )
@@ -82,9 +87,9 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800">
+        <div className="p-4 border-t border-white/10">
           {!collapsed && (
-            <div className="text-xs text-slate-500">
+            <div className="text-xs text-white/40 font-accent">
               <p>Propflow v1.0</p>
             </div>
           )}

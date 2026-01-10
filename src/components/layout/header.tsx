@@ -10,30 +10,34 @@ interface HeaderProps {
 
 export function Header({ title }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-30 h-16 bg-slate-900/95 backdrop-blur border-b border-slate-800">
+    <header className="sticky top-0 z-30 h-16 bg-white/80 backdrop-blur-md border-b border-gray-200/60">
       <div className="flex h-full items-center justify-between px-6">
         <div>
           {title && (
-            <h1 className="text-xl font-semibold text-white">{title}</h1>
+            <h1 className="text-2xl font-heading font-semibold text-[#083E33] tracking-tight">
+              {title}
+            </h1>
           )}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
-            className="text-slate-400 hover:text-white hover:bg-slate-800"
+            className="text-gray-500 hover:text-[#083E33] hover:bg-gray-100 transition-colors"
           >
             <Bell className="h-5 w-5" />
           </Button>
 
+          <div className="w-px h-6 bg-gray-200" />
+
           <UserButton
             appearance={{
               elements: {
-                avatarBox: 'w-8 h-8',
-                userButtonPopoverCard: 'bg-slate-800 border border-slate-700',
-                userButtonPopoverActionButton: 'text-slate-300 hover:text-white hover:bg-slate-700',
-                userButtonPopoverActionButtonText: 'text-slate-300',
+                avatarBox: 'w-9 h-9 ring-2 ring-[#083E33]/10',
+                userButtonPopoverCard: 'bg-white border border-gray-200 shadow-elevated',
+                userButtonPopoverActionButton: 'text-gray-700 hover:text-[#083E33] hover:bg-gray-50',
+                userButtonPopoverActionButtonText: 'text-gray-700',
                 userButtonPopoverFooter: 'hidden',
               },
             }}

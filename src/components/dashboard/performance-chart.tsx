@@ -22,55 +22,63 @@ const chartData = [
 const chartConfig = {
   opens: {
     label: 'Opens',
-    color: '#1e3a5f',
+    color: '#083E33',
   },
   clicks: {
     label: 'Clicks',
-    color: '#d4af37',
+    color: '#D4AF37',
   },
 } satisfies ChartConfig
 
 export function PerformanceChart() {
   return (
-    <Card className="bg-slate-900 border-slate-800">
-      <CardHeader>
-        <CardTitle className="text-white">Performance Trends</CardTitle>
+    <Card className="bg-white border border-gray-100 shadow-card">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg font-heading font-semibold text-[#083E33]">
+          Performance Trends
+        </CardTitle>
+        <p className="text-sm text-gray-500">Monthly email engagement overview</p>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px] w-full">
+      <CardContent className="pt-4">
+        <ChartContainer config={chartConfig} className="h-[280px] w-full">
           <AreaChart
             data={chartData}
-            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
           >
             <defs>
               <linearGradient id="colorOpens" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#1e3a5f" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#1e3a5f" stopOpacity={0} />
+                <stop offset="5%" stopColor="#083E33" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#083E33" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#d4af37" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#d4af37" stopOpacity={0} />
+                <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#D4AF37" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
             <XAxis
               dataKey="date"
-              stroke="#64748b"
+              stroke="#9CA3AF"
               fontSize={12}
               tickLine={false}
               axisLine={false}
+              tickMargin={8}
             />
             <YAxis
-              stroke="#64748b"
+              stroke="#9CA3AF"
               fontSize={12}
               tickLine={false}
               axisLine={false}
+              tickMargin={8}
             />
-            <ChartTooltip content={<ChartTooltipContent />} />
+            <ChartTooltip
+              content={<ChartTooltipContent />}
+              cursor={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+            />
             <Area
               type="monotone"
               dataKey="opens"
-              stroke="#1e3a5f"
+              stroke="#083E33"
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorOpens)"
@@ -78,13 +86,25 @@ export function PerformanceChart() {
             <Area
               type="monotone"
               dataKey="clicks"
-              stroke="#d4af37"
+              stroke="#D4AF37"
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorClicks)"
             />
           </AreaChart>
         </ChartContainer>
+
+        {/* Legend */}
+        <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-gray-100">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-[#083E33]" />
+            <span className="text-sm text-gray-600">Opens</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-[#D4AF37]" />
+            <span className="text-sm text-gray-600">Clicks</span>
+          </div>
+        </div>
       </CardContent>
     </Card>
   )
