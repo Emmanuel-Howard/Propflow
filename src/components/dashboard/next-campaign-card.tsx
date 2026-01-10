@@ -2,9 +2,8 @@
 
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Calendar, Users, Clock, CheckCircle, Edit } from 'lucide-react'
+import { CheckCircle, Edit } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 
 interface NextCampaignCardProps {
@@ -30,78 +29,65 @@ export function NextCampaignCard({ campaign }: NextCampaignCardProps) {
   const statusConfig = {
     pending_approval: {
       label: 'Pending Approval',
-      className: 'bg-amber-50 text-amber-700',
+      className: 'text-amber-600',
     },
     approved: {
       label: 'Approved',
-      className: 'bg-emerald-50 text-emerald-700',
+      className: 'text-green-600',
     },
     scheduled: {
       label: 'Scheduled',
-      className: 'bg-blue-50 text-blue-700',
+      className: 'text-neutral-600',
     },
   }
 
   const status = statusConfig[mockCampaign.status]
 
   return (
-    <Card className="bg-white border border-gray-100 shadow-card hover:shadow-elevated transition-all duration-300">
-      <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <CardTitle className="text-lg font-heading font-semibold text-[#083E33] flex items-center gap-2">
-          <div className="p-1.5 bg-[#D4AF37]/10 rounded-lg">
-            <Calendar className="h-4 w-4 text-[#D4AF37]" />
-          </div>
-          Next Campaign
-        </CardTitle>
-        <Badge className={`${status.className} border-0 font-medium`}>
-          {status.label}
-        </Badge>
+    <Card className="bg-white border border-neutral-200">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-heading text-black">
+            Next Campaign
+          </CardTitle>
+          <span className={`text-xs font-medium uppercase tracking-wide ${status.className}`}>
+            {status.label}
+          </span>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <div>
-          <h3 className="font-medium text-gray-900">{mockCampaign.subject}</h3>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Scheduled for {format(mockCampaign.scheduledAt, 'MMM d, yyyy')}
+          <h3 className="font-medium text-black">{mockCampaign.subject}</h3>
+          <p className="text-sm text-neutral-500 mt-1">
+            {format(mockCampaign.scheduledAt, 'MMMM d, yyyy')}
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-            <div className="p-2 bg-white rounded-lg shadow-sm">
-              <Clock className="h-4 w-4 text-[#083E33]" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[#083E33]">
-                {formatDistanceToNow(mockCampaign.scheduledAt, { addSuffix: true })}
-              </p>
-              <p className="text-xs text-gray-500">Time until send</p>
-            </div>
+        <div className="grid grid-cols-2 gap-4 py-4 border-y border-neutral-100">
+          <div>
+            <p className="text-2xl font-heading text-black">
+              {formatDistanceToNow(mockCampaign.scheduledAt)}
+            </p>
+            <p className="text-xs text-neutral-500 mt-1 uppercase tracking-wide">Until Send</p>
           </div>
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-            <div className="p-2 bg-white rounded-lg shadow-sm">
-              <Users className="h-4 w-4 text-[#083E33]" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[#083E33]">
-                {mockCampaign.recipientCount.toLocaleString()}
-              </p>
-              <p className="text-xs text-gray-500">Recipients</p>
-            </div>
+          <div>
+            <p className="text-2xl font-heading text-black">
+              {mockCampaign.recipientCount.toLocaleString()}
+            </p>
+            <p className="text-xs text-neutral-500 mt-1 uppercase tracking-wide">Recipients</p>
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           {mockCampaign.status === 'pending_approval' && (
             <>
-              <Button
-                className="flex-1 bg-[#083E33] hover:bg-[#062d25] text-white font-medium shadow-sm"
-              >
+              <Button className="flex-1 bg-[#083E33] hover:bg-[#062d25] text-white font-medium">
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Approve
               </Button>
               <Button
                 variant="outline"
-                className="flex-1 border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium"
+                className="flex-1 border-neutral-200 text-black hover:bg-neutral-50 font-medium"
               >
                 <Edit className="h-4 w-4 mr-2" />
                 Request Changes
@@ -112,7 +98,7 @@ export function NextCampaignCard({ campaign }: NextCampaignCardProps) {
             <Button
               asChild
               variant="ghost"
-              className="w-full text-[#083E33] hover:text-[#083E33] hover:bg-[#083E33]/5 font-medium"
+              className="w-full text-black hover:text-black hover:bg-neutral-50 font-medium"
             >
               <Link href={`/campaigns/${mockCampaign.id}`}>
                 View Campaign

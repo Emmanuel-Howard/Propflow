@@ -7,10 +7,10 @@ import { QuickActions } from '@/components/dashboard/quick-actions'
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen bg-white">
       <Header title="Dashboard" />
 
-      <div className="p-6 lg:p-8 space-y-6">
+      <div className="p-8 space-y-8">
         {/* Metrics Overview */}
         <section>
           <MetricsCards />
@@ -18,12 +18,9 @@ export default function DashboardPage() {
 
         {/* Charts and Quick Actions */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Performance Chart - Takes 2 columns */}
           <div className="lg:col-span-2">
             <PerformanceChart />
           </div>
-
-          {/* Quick Actions */}
           <div>
             <QuickActions />
           </div>
