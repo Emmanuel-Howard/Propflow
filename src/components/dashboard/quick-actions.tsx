@@ -1,22 +1,17 @@
 'use client'
 
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, Upload, BarChart3 } from 'lucide-react'
 
 export function QuickActions() {
   return (
-    <Card className="bg-white border border-neutral-200 h-full">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-heading text-black">
-          Quick Actions
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <div>
+      <h3 className="text-label font-semibold text-black mb-4">Quick Actions</h3>
+      <div className="space-y-2">
         <Button
           asChild
-          className="w-full justify-start bg-[#083E33] hover:bg-[#062d25] text-white font-medium"
+          className="w-full justify-start bg-white border border-[#E0E0E0] text-black hover:bg-black/5 hover:shadow-sm font-medium transition-smooth"
         >
           <Link href="/campaigns/new">
             <Plus className="h-4 w-4 mr-3" />
@@ -26,8 +21,8 @@ export function QuickActions() {
 
         <Button
           asChild
-          variant="outline"
-          className="w-full justify-start border-neutral-200 text-black hover:bg-neutral-50 font-medium"
+          variant="ghost"
+          className="w-full justify-start text-black/70 hover:text-black hover:bg-black/5 font-medium transition-smooth"
         >
           <Link href="/contacts">
             <Upload className="h-4 w-4 mr-3" />
@@ -37,15 +32,15 @@ export function QuickActions() {
 
         <Button
           asChild
-          variant="outline"
-          className="w-full justify-start border-neutral-200 text-black hover:bg-neutral-50 font-medium"
+          variant="ghost"
+          className="w-full justify-start text-black/70 hover:text-black hover:bg-black/5 font-medium transition-smooth"
         >
           <Link href="/analytics">
             <BarChart3 className="h-4 w-4 mr-3" />
             View Analytics
           </Link>
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

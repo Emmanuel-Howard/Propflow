@@ -10,27 +10,25 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-white">
       <Header title="Dashboard" />
 
-      <div className="p-8 space-y-8">
+      <div className="px-6 py-6 space-y-8">
         {/* Metrics Overview */}
-        <section>
-          <MetricsCards />
-        </section>
+        <MetricsCards />
 
         {/* Charts and Quick Actions */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="lg:col-span-3">
             <PerformanceChart />
           </div>
           <div>
             <QuickActions />
           </div>
-        </section>
+        </div>
 
         {/* Campaign Cards */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <RecentCampaignCard />
           <NextCampaignCard />
-        </section>
+        </div>
       </div>
     </div>
   )

@@ -6,25 +6,27 @@ import { Button } from '@/components/ui/button'
 
 interface HeaderProps {
   title?: string
+  description?: string
 }
 
-export function Header({ title }: HeaderProps) {
+export function Header({ title, description }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-30 h-20 bg-white border-b border-neutral-200">
-      <div className="flex h-full items-center justify-between px-8">
+    <header className="sticky top-0 z-30 bg-white border-b border-[#E0E0E0]">
+      <div className="flex h-16 items-center justify-between px-6">
         <div>
           {title && (
-            <h1 className="text-2xl font-heading text-black tracking-tight">
-              {title}
-            </h1>
+            <h1 className="text-h2 text-black">{title}</h1>
+          )}
+          {description && (
+            <p className="text-muted-sm mt-0.5">{description}</p>
           )}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
-            className="text-neutral-500 hover:text-black hover:bg-neutral-100"
+            className="text-black/50 hover:text-black hover:bg-black/5 transition-smooth"
           >
             <Bell className="h-5 w-5" />
           </Button>
@@ -32,10 +34,10 @@ export function Header({ title }: HeaderProps) {
           <UserButton
             appearance={{
               elements: {
-                avatarBox: 'w-9 h-9',
-                userButtonPopoverCard: 'bg-white border border-neutral-200 shadow-lg',
-                userButtonPopoverActionButton: 'text-neutral-700 hover:text-black hover:bg-neutral-50',
-                userButtonPopoverActionButtonText: 'text-neutral-700',
+                avatarBox: 'w-8 h-8',
+                userButtonPopoverCard: 'bg-white border border-[#E0E0E0] shadow-lg',
+                userButtonPopoverActionButton: 'text-black hover:bg-black/5',
+                userButtonPopoverActionButtonText: 'text-black',
                 userButtonPopoverFooter: 'hidden',
               },
             }}

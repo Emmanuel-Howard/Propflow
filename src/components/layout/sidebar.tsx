@@ -26,16 +26,16 @@ export function Sidebar() {
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-[#083E33]">
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex h-20 items-center px-6 border-b border-white/10">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <span className="text-2xl font-heading text-white tracking-tight">
+        <div className="flex h-16 items-center px-6 border-b border-white/10">
+          <Link href="/dashboard" className="flex items-center">
+            <span className="text-xl font-semibold text-white tracking-tight">
               Propflow
             </span>
           </Link>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-8">
+        <nav className="flex-1 px-3 py-6">
           <ul className="space-y-1">
             {navigation.map((item) => {
               const isActive = pathname.startsWith(item.href)
@@ -44,10 +44,10 @@ export function Sidebar() {
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors',
+                      'flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-smooth rounded',
                       isActive
-                        ? 'text-[#D4AF37] bg-white/5'
-                        : 'text-white/70 hover:text-white hover:bg-white/5'
+                        ? 'text-[#D4AF37] bg-white/10'
+                        : 'text-white/60 hover:text-white hover:bg-white/5'
                     )}
                   >
                     <item.icon className="h-5 w-5" />
@@ -60,8 +60,8 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="px-6 py-6 border-t border-white/10">
-          <p className="text-xs text-white/40 font-accent">Propflow v1.0</p>
+        <div className="px-6 py-4 border-t border-white/10">
+          <p className="text-xs text-white/30">Propflow v1.0</p>
         </div>
       </div>
     </aside>
