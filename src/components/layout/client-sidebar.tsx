@@ -19,7 +19,7 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
-export function Sidebar() {
+export function ClientSidebar() {
   const pathname = usePathname()
 
   return (

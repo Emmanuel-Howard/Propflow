@@ -5,25 +5,23 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
-  Mail,
-  BarChart3,
   Users,
+  FileText,
   Settings,
 } from 'lucide-react'
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Campaigns', href: '/campaigns', icon: Mail },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Contacts', href: '/contacts', icon: Users },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Overview', href: '/overview', icon: LayoutDashboard },
+  { name: 'Clients', href: '/clients', icon: Users },
+  { name: 'Templates', href: '/templates', icon: FileText },
+  { name: 'Settings', href: '/admin-settings', icon: Settings },
 ]
 
-export function MobileNav() {
+export function AdminMobileNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-neutral-200 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E0E0E0] md:hidden">
       <div className="flex justify-around py-2">
         {navigation.map((item) => {
           const isActive = pathname.startsWith(item.href)
@@ -32,10 +30,10 @@ export function MobileNav() {
               key={item.name}
               href={item.href}
               className={cn(
-                'flex flex-col items-center gap-1 px-3 py-2 text-xs font-medium transition-colors',
+                'flex flex-col items-center gap-1 px-3 py-2 text-xs font-medium transition-smooth',
                 isActive
                   ? 'text-[#083E33]'
-                  : 'text-neutral-400 hover:text-neutral-600'
+                  : 'text-black/40 hover:text-black/60'
               )}
             >
               <item.icon className="h-5 w-5" />

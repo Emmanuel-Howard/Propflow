@@ -3,6 +3,7 @@ import { Inter, Playfair_Display, Lora } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import { Toaster } from '@/components/ui/sonner'
 import { QueryProvider } from '@/providers/query-provider'
+import { ClientProvider } from '@/contexts/client-context'
 import './globals.css'
 
 const inter = Inter({
@@ -36,7 +37,9 @@ export default function RootLayout({
       <html lang="en">
         <body className={`${inter.variable} ${playfair.variable} ${lora.variable} font-sans antialiased`}>
           <QueryProvider>
-            {children}
+            <ClientProvider>
+              {children}
+            </ClientProvider>
             <Toaster />
           </QueryProvider>
         </body>

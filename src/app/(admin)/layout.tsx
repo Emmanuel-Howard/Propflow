@@ -1,7 +1,7 @@
-import { Sidebar } from '@/components/layout/sidebar'
-import { MobileNav } from '@/components/layout/mobile-nav'
+import { AdminSidebar } from '@/components/layout/admin-sidebar'
+import { AdminMobileNav } from '@/components/layout/admin-mobile-nav'
 
-export default function DashboardLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
@@ -10,7 +10,7 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-white">
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
-        <Sidebar />
+        <AdminSidebar />
       </div>
 
       {/* Main Content */}
@@ -19,7 +19,7 @@ export default function DashboardLayout({
       </main>
 
       {/* Mobile Navigation */}
-      <MobileNav />
+      <AdminMobileNav />
     </div>
   )
 }
