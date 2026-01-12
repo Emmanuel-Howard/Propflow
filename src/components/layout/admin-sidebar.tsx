@@ -26,7 +26,7 @@ import { useClient } from '@/contexts/client-context'
 const navigation = [
   { name: 'Overview', href: '/overview', icon: LayoutDashboard },
   { name: 'Clients', href: '/clients', icon: Users },
-  { name: 'Templates', href: '/templates', icon: FileText },
+  { name: 'Campaigns', href: '/admin-campaigns', icon: FileText },
   { name: 'Settings', href: '/admin-settings', icon: Settings },
 ]
 

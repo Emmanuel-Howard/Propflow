@@ -1,36 +1,140 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { ArrowLeft, Eye, Code, Send, Calendar, Monitor, Smartphone } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { ArrowLeft, Eye, Code, Send, Calendar, Monitor, Smartphone, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
+import { format } from 'date-fns'
 
-export default function NewCampaignPage() {
+interface Client {
+  id: string
+  name: string
+  email: string
+}
+
+export default function AdminNewCampaignPage() {
   const router = useRouter()
+
+  const [clients, setClients] = useState<Client[]>([])
+  const [selectedClientId, setSelectedClientId] = useState('')
   const [subject, setSubject] = useState('')
   const [previewText, setPreviewText] = useState('')
   const [contentHtml, setContentHtml] = useState('')
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop')
+  const [saving, setSaving] = useState(false)
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
+  const [scheduledDate, setScheduledDate] = useState('')
+  const [scheduledTime, setScheduledTime] = useState('09:00')
+  const [loadingClients, setLoadingClients] = useState(true)
 
-  const handleSaveDraft = () => {
-    // TODO: Save draft
-    console.log('Saving draft...')
+  useEffect(() => {
+    fetchClients()
+  }, [])
+
+  async function fetchClients() {
+    try {
+      const response = await fetch('/api/admin/clients')
+      if (response.ok) {
+        const data = await response.json()
+        setClients(data)
+      }
+    } catch (error) {
+      console.error('Error fetching clients:', error)
+      toast.error('Failed to load clients')
+    } finally {
+      setLoadingClients(false)
+    }
   }
 
-  const handleSchedule = () => {
-    // TODO: Open schedule dialog
-    console.log('Opening schedule dialog...')
+  async function saveCampaign(status: 'draft' | 'approved' | 'scheduled', scheduledAt?: string) {
+    if (!selectedClientId) {
+      toast.error('Please select a client')
+      return
+    }
+
+    if (!subject.trim()) {
+      toast.error('Please enter a subject line')
+      return
+    }
+
+    if (!contentHtml.trim()) {
+      toast.error('Please add email content')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const response = await fetch('/api/campaigns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: selectedClientId,
+          subject: subject.trim(),
+          preview_text: previewText.trim() || null,
+          content_html: contentHtml,
+          status,
+          scheduled_at: scheduledAt || null,
+        }),
+      })
+
+      if (response.ok) {
+        const statusMessages = {
+          draft: 'Campaign saved as draft',
+          approved: 'Campaign created and approved',
+          scheduled: 'Campaign scheduled successfully',
+        }
+        toast.success(statusMessages[status])
+        router.push('/admin-campaigns')
+      } else {
+        const data = await response.json()
+        toast.error(data.error || 'Failed to save campaign')
+      }
+    } catch (error) {
+      console.error('Error saving campaign:', error)
+      toast.error('Failed to save campaign')
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const handleSendNow = () => {
-    // TODO: Send campaign
-    console.log('Sending campaign...')
+  function handleSaveDraft() {
+    saveCampaign('draft')
+  }
+
+  function handleSchedule() {
+    if (!scheduledDate) {
+      toast.error('Please select a date')
+      return
+    }
+
+    const scheduledAt = new Date(`${scheduledDate}T${scheduledTime}`).toISOString()
+    setScheduleDialogOpen(false)
+    saveCampaign('scheduled', scheduledAt)
+  }
+
+  function handleApproveAndSave() {
+    saveCampaign('approved')
   }
 
   return (
@@ -44,7 +148,7 @@ export default function NewCampaignPage() {
           variant="ghost"
           className="text-black/50 hover:text-black hover:bg-black/5 -ml-2"
         >
-          <Link href="/campaigns">
+          <Link href="/admin-campaigns">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Campaigns
           </Link>
@@ -53,6 +157,39 @@ export default function NewCampaignPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column - Editor */}
           <div className="space-y-6">
+            {/* Client Selection */}
+            <div className="border border-[#E0E0E0] rounded p-6 space-y-4">
+              <h3 className="font-semibold text-black">Select Client</h3>
+
+              <div className="space-y-2">
+                <Label htmlFor="client" className="text-black font-medium">
+                  Client Account
+                </Label>
+                {loadingClients ? (
+                  <div className="flex items-center gap-2 text-black/50">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading clients...
+                  </div>
+                ) : (
+                  <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+                    <SelectTrigger className="bg-white border-[#E0E0E0]">
+                      <SelectValue placeholder="Select a client..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                <p className="text-xs text-black/50">
+                  This campaign will be created for the selected client
+                </p>
+              </div>
+            </div>
+
             {/* Subject & Preview */}
             <div className="border border-[#E0E0E0] rounded p-6 space-y-4">
               <h3 className="font-semibold text-black">Campaign Details</h3>
@@ -174,37 +311,79 @@ export default function NewCampaignPage() {
                 onClick={handleSaveDraft}
                 variant="outline"
                 className="w-full border-[#E0E0E0] text-black hover:bg-black/5 font-medium transition-smooth"
+                disabled={saving || !selectedClientId}
               >
+                {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                 Save as Draft
               </Button>
 
               <Button
-                onClick={handleSchedule}
+                onClick={() => setScheduleDialogOpen(true)}
                 variant="outline"
                 className="w-full border-[#E0E0E0] text-black hover:bg-black/5 font-medium transition-smooth"
+                disabled={!subject || !contentHtml || !selectedClientId}
               >
                 <Calendar className="h-4 w-4 mr-2" />
                 Schedule
               </Button>
 
               <Button
-                onClick={handleSendNow}
+                onClick={handleApproveAndSave}
                 className="w-full bg-[#083E33] hover:bg-[#062d25] text-white font-medium transition-smooth"
-                disabled={!subject || !contentHtml}
+                disabled={!subject || !contentHtml || saving || !selectedClientId}
               >
-                <Send className="h-4 w-4 mr-2" />
-                Send Now
+                {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                Approve & Save
               </Button>
 
-              {(!subject || !contentHtml) && (
+              {(!subject || !contentHtml || !selectedClientId) && (
                 <p className="text-xs text-black/50 text-center">
-                  Add subject and content to send
+                  Select a client and add subject & content
                 </p>
               )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Schedule Dialog */}
+      <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Schedule Campaign</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="schedule-date">Date</Label>
+              <Input
+                id="schedule-date"
+                type="date"
+                value={scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
+                min={format(new Date(), 'yyyy-MM-dd')}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="schedule-time">Time</Label>
+              <Input
+                id="schedule-time"
+                type="time"
+                value={scheduledTime}
+                onChange={(e) => setScheduledTime(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setScheduleDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSchedule} disabled={saving}>
+              {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Schedule
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

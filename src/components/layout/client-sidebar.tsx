@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
@@ -9,7 +9,20 @@ import {
   BarChart3,
   Users,
   Settings,
+  ChevronDown,
+  Building2,
+  Check,
+  Loader2,
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useClient } from '@/contexts/client-context'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -21,17 +34,116 @@ const navigation = [
 
 export function ClientSidebar() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const clientId = searchParams.get('client_id')
+  const { selectedClient, setSelectedClient, clients, loading } = useClient()
+
+  // Get current client info
+  const currentClient = selectedClient || clients.find(c => c.id === clientId)
+
+  // Build href with client_id param
+  const buildHref = (baseHref: string) => {
+    if (clientId) {
+      return `${baseHref}?client_id=${clientId}`
+    }
+    return baseHref
+  }
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-[#083E33]">
       <div className="flex h-full flex-col">
         {/* Logo */}
         <div className="flex h-16 items-center px-6 border-b border-white/10">
-          <Link href="/dashboard" className="flex items-center">
+          <Link href={buildHref('/dashboard')} className="flex items-center">
             <span className="text-xl font-semibold text-white tracking-tight">
               Propflow
             </span>
           </Link>
+        </div>
+
+        {/* Account Switcher */}
+        <div className="px-3 py-4 border-b border-white/10">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="w-full">
+              <div className="flex items-center justify-between px-3 py-2.5 bg-white/5 hover:bg-white/10 rounded transition-smooth cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-white/10 rounded flex items-center justify-center">
+                    <Building2 className="h-4 w-4 text-white/70" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-white truncate max-w-[140px]">
+                      {currentClient ? currentClient.name : 'My Account'}
+                    </p>
+                    <p className="text-xs text-white/50">
+                      {currentClient ? currentClient.email : 'Client view'}
+                    </p>
+                  </div>
+                </div>
+                <ChevronDown className="h-4 w-4 text-white/50" />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              className="w-[232px] bg-white border-[#E0E0E0]"
+            >
+              <DropdownMenuLabel className="text-black/50 text-xs uppercase tracking-wider font-medium">
+                Switch Account
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-[#E0E0E0]" />
+
+              {/* Admin Dashboard Option */}
+              <DropdownMenuItem
+                onClick={() => setSelectedClient(null)}
+                className="flex items-center justify-between cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-[#083E33] rounded flex items-center justify-center">
+                    <span className="text-xs font-bold text-white">P</span>
+                  </div>
+                  <span className="text-black font-medium">Admin Dashboard</span>
+                </div>
+                {!selectedClient && !clientId && <Check className="h-4 w-4 text-[#083E33]" />}
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator className="bg-[#E0E0E0]" />
+              <DropdownMenuLabel className="text-black/50 text-xs uppercase tracking-wider font-medium">
+                Client Accounts
+              </DropdownMenuLabel>
+
+              {loading ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-4 w-4 animate-spin text-black/30" />
+                </div>
+              ) : clients.length > 0 ? (
+                clients.map((client) => (
+                  <DropdownMenuItem
+                    key={client.id}
+                    onClick={() => setSelectedClient(client)}
+                    className="flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-[#F0F0F0] rounded flex items-center justify-center">
+                        <span className="text-xs font-medium text-black/60">
+                          {client.name.charAt(0)}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-black font-medium text-sm">{client.name}</p>
+                        <p className="text-black/50 text-xs">{client.email}</p>
+                      </div>
+                    </div>
+                    {(selectedClient?.id === client.id || clientId === client.id) && (
+                      <Check className="h-4 w-4 text-[#083E33]" />
+                    )}
+                  </DropdownMenuItem>
+                ))
+              ) : (
+                <div className="py-3 px-2 text-center text-sm text-black/50">
+                  No other accounts
+                </div>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Navigation */}
@@ -42,7 +154,7 @@ export function ClientSidebar() {
               return (
                 <li key={item.name}>
                   <Link
-                    href={item.href}
+                    href={buildHref(item.href)}
                     className={cn(
                       'flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-smooth rounded',
                       isActive
