@@ -72,7 +72,7 @@ export async function GET() {
         id: activity.id,
         action: formatAction(activity.action),
         client: activity.clients?.name || 'Unknown',
-        detail: activity.metadata?.detail || '',
+        detail: (activity.metadata as Record<string, string> | null)?.detail || '',
         time: formatTimeAgo(activity.created_at),
       })),
       upcomingCampaigns: (upcomingCampaigns || []).map((campaign) => ({

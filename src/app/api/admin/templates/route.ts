@@ -55,7 +55,7 @@ export async function GET(request: Request) {
   }
 }
 
-// POST /api/admin/templates - Create a new template
+// POST /api/admin/templates - Create a new template or duplicate
 export async function POST(request: Request) {
   try {
     const { userId } = await auth()
@@ -65,14 +65,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name, description, content_html, category } = body
-
-    if (!name || !content_html) {
-      return NextResponse.json(
-        { error: 'Name and content are required' },
-        { status: 400 }
-      )
-    }
+    const { name, description, content_html, category, duplicate_from } = body
 
     const supabase = createAdminClient()
 
@@ -82,6 +75,55 @@ export async function POST(request: Request) {
       .select('id')
       .eq('clerk_id', userId)
       .single()
+
+    // Handle duplication
+    if (duplicate_from) {
+      const { data: sourceTemplate, error: fetchError } = await supabase
+        .from('templates')
+        .select('*')
+        .eq('id', duplicate_from)
+        .single()
+
+      if (fetchError || !sourceTemplate) {
+        return NextResponse.json({ error: 'Source template not found' }, { status: 404 })
+      }
+
+      const { data: template, error } = await supabase
+        .from('templates')
+        .insert({
+          name: `${sourceTemplate.name} (Copy)`,
+          description: sourceTemplate.description,
+          content_html: sourceTemplate.content_html,
+          category: sourceTemplate.category,
+          created_by: user?.id,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error duplicating template:', error)
+        return NextResponse.json({ error: 'Failed to duplicate template' }, { status: 500 })
+      }
+
+      // Log activity
+      await supabase.from('activity_logs').insert({
+        user_id: user?.id,
+        action: 'template_duplicated',
+        entity_type: 'template',
+        entity_id: template.id,
+        metadata: { source_id: duplicate_from, source_name: sourceTemplate.name },
+      })
+
+      return NextResponse.json(template, { status: 201 })
+    }
+
+    // Regular creation
+    if (!name || !content_html) {
+      return NextResponse.json(
+        { error: 'Name and content are required' },
+        { status: 400 }
+      )
+    }
 
     const { data: template, error } = await supabase
       .from('templates')
@@ -99,6 +141,15 @@ export async function POST(request: Request) {
       console.error('Error creating template:', error)
       return NextResponse.json({ error: 'Failed to create template' }, { status: 500 })
     }
+
+    // Log activity
+    await supabase.from('activity_logs').insert({
+      user_id: user?.id,
+      action: 'template_created',
+      entity_type: 'template',
+      entity_id: template.id,
+      metadata: { name },
+    })
 
     return NextResponse.json(template, { status: 201 })
   } catch (error) {

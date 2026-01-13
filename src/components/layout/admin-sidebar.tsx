@@ -12,6 +12,7 @@ import {
   Building2,
   Check,
   Loader2,
+  LayoutTemplate,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -27,6 +28,7 @@ const navigation = [
   { name: 'Overview', href: '/overview', icon: LayoutDashboard },
   { name: 'Clients', href: '/clients', icon: Users },
   { name: 'Campaigns', href: '/admin-campaigns', icon: FileText },
+  { name: 'Templates', href: '/templates', icon: LayoutTemplate },
   { name: 'Settings', href: '/admin-settings', icon: Settings },
 ]
 

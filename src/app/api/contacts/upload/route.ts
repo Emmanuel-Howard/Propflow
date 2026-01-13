@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import Papa from 'papaparse'
+import type { ContactStatus } from '@/types/database'
 
 interface CSVRow {
   email?: string
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
       phone: string | null
       tags: string[]
       source: string
-      status: string
+      status: ContactStatus
     }[] = []
     const skippedRows: { row: number; reason: string }[] = []
     const duplicateEmails: string[] = []

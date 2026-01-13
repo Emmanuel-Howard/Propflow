@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { ContactInsert } from '@/types/database'
+import type { ContactInsert, ContactStatus } from '@/types/database'
 
 // GET /api/contacts - List contacts for a client
 export async function GET(request: NextRequest) {
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
     // Filter by status if provided
     if (status && status !== 'all') {
-      query = query.eq('status', status)
+      query = query.eq('status', status as ContactStatus)
     }
 
     // Search by email or name

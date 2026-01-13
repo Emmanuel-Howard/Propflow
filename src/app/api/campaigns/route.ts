@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { CampaignInsert } from '@/types/database'
+import type { CampaignInsert, CampaignStatus } from '@/types/database'
 
 // GET /api/campaigns - List campaigns for a client
 export async function GET(request: NextRequest) {
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     // Filter by status if provided
     if (status && status !== 'all') {
-      query = query.eq('status', status)
+      query = query.eq('status', status as CampaignStatus)
     }
 
     const { data: campaigns, error } = await query

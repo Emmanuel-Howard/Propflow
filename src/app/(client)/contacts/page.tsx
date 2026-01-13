@@ -181,7 +181,7 @@ export default function ContactsPage() {
         toast.success(editingContact ? 'Contact updated' : 'Contact added')
         setAddDialogOpen(false)
         setEditingContact(null)
-        setFormData({ email: '', first_name: '', last_name: '' })
+        setFormData({ email: '', first_name: '', last_name: '', phone: '' })
         fetchContacts()
       } else {
         const data = await response.json()
