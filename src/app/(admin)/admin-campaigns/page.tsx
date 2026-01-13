@@ -26,17 +26,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, MoreHorizontal, Loader2, Pencil, Copy, Trash2, Search, Check, X } from 'lucide-react'
+import { Plus, MoreHorizontal, Loader2, Pencil, Copy, Trash2, Search, Check, X, Eye } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import type { Campaign } from '@/types/database'
+import type { Campaign, AudienceType } from '@/types/database'
 
 interface CampaignWithDetails extends Campaign {
   recipients: number
   openRate: number
   clickRate: number
   client_name?: string
+  list_name?: string
+}
+
+function getAudienceDisplay(campaign: CampaignWithDetails): string {
+  if (campaign.audience_type === 'all' || !campaign.audience_type) return 'Everyone'
+  if (campaign.audience_type === 'list') return `List: ${campaign.list_name || 'Unknown'}`
+  if (campaign.audience_type === 'custom') {
+    const count = campaign.audience_contact_ids?.length || 0
+    return `${count} contact${count === 1 ? '' : 's'}`
+  }
+  return 'Everyone'
 }
 
 interface Client {
@@ -47,9 +58,9 @@ interface Client {
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   draft: { label: 'Draft', className: 'text-black/40' },
-  pending_approval: { label: 'Pending Approval', className: 'text-amber-600' },
-  approved: { label: 'Approved', className: 'text-blue-600' },
-  scheduled: { label: 'Scheduled', className: 'text-blue-600' },
+  pending_approval: { label: 'Review Request', className: 'text-amber-600' },
+  approved: { label: 'Ready', className: 'text-blue-600' },
+  scheduled: { label: 'Scheduled', className: 'text-purple-600' },
   sending: { label: 'Sending', className: 'text-purple-600' },
   sent: { label: 'Sent', className: 'text-green-600' },
   failed: { label: 'Failed', className: 'text-red-600' },
@@ -59,8 +70,8 @@ const statusConfig: Record<string, { label: string; className: string }> = {
 const statusFilters = [
   { value: 'all', label: 'All Campaigns' },
   { value: 'draft', label: 'Drafts' },
-  { value: 'pending_approval', label: 'Pending Approval' },
-  { value: 'approved', label: 'Approved' },
+  { value: 'pending_approval', label: 'Review Requests' },
+  { value: 'approved', label: 'Ready' },
   { value: 'scheduled', label: 'Scheduled' },
   { value: 'sent', label: 'Sent' },
 ]
@@ -293,8 +304,10 @@ export default function AdminCampaignsPage() {
                 <TableRow className="bg-[#FAFAFA] hover:bg-[#FAFAFA]">
                   <TableHead className="text-black/60 font-medium">Campaign</TableHead>
                   <TableHead className="text-black/60 font-medium">Client</TableHead>
+                  <TableHead className="text-black/60 font-medium">Audience</TableHead>
                   <TableHead className="text-black/60 font-medium">Status</TableHead>
-                  <TableHead className="text-black/60 font-medium">Date</TableHead>
+                  <TableHead className="text-black/60 font-medium">Scheduled</TableHead>
+                  <TableHead className="text-black/60 font-medium">Sent</TableHead>
                   <TableHead className="text-black/60 font-medium text-right">Opens</TableHead>
                   <TableHead className="text-black/60 font-medium text-right">Clicks</TableHead>
                   <TableHead className="text-black/60 font-medium w-[100px]">Actions</TableHead>
@@ -320,17 +333,23 @@ export default function AdminCampaignsPage() {
                       <TableCell className="text-black/60">
                         {campaign.client_name}
                       </TableCell>
+                      <TableCell className="text-black/60">
+                        {getAudienceDisplay(campaign)}
+                      </TableCell>
                       <TableCell>
                         <span className={`text-sm font-medium ${status.className}`}>
                           {status.label}
                         </span>
                       </TableCell>
                       <TableCell className="text-black/60">
+                        {campaign.scheduled_at
+                          ? format(new Date(campaign.scheduled_at), 'MMM d, yyyy')
+                          : '—'}
+                      </TableCell>
+                      <TableCell className="text-black/60">
                         {campaign.sent_at
                           ? format(new Date(campaign.sent_at), 'MMM d, yyyy')
-                          : campaign.scheduled_at
-                          ? format(new Date(campaign.scheduled_at), 'MMM d, yyyy')
-                          : format(new Date(campaign.created_at), 'MMM d, yyyy')}
+                          : '—'}
                       </TableCell>
                       <TableCell className="text-right text-black tabular-nums">
                         {campaign.openRate ? `${campaign.openRate.toFixed(1)}%` : '—'}
@@ -372,6 +391,12 @@ export default function AdminCampaignsPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/admin-campaigns/${campaign.id}`}>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View
+                                </Link>
+                              </DropdownMenuItem>
                               <DropdownMenuItem asChild>
                                 <Link href={`/admin-campaigns/${campaign.id}/edit`}>
                                   <Pencil className="h-4 w-4 mr-2" />

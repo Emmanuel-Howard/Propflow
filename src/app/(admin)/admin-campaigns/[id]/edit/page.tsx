@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { Header } from '@/components/layout/header'
@@ -21,14 +21,14 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { ArrowLeft, Eye, Calendar, Monitor, Smartphone, Loader2, FileText, Sparkles } from 'lucide-react'
+import { ArrowLeft, Loader2, Save, Eye, Monitor, Smartphone, Calendar, FileText, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { AudienceSelector } from '@/components/campaigns/audience-selector'
 import { TemplatePickerModal } from '@/components/campaigns/template-picker-modal'
-import type { Template, AudienceType } from '@/types/database'
+import type { Campaign, Template, AudienceType } from '@/types/database'
 
 // Dynamic import to avoid SSR issues with GrapesJS
 const TemplateEditor = dynamic(
@@ -49,9 +49,16 @@ interface Client {
   email: string
 }
 
-export default function AdminNewCampaignPage() {
+interface EditCampaignPageProps {
+  params: Promise<{ id: string }>
+}
+
+export default function EditCampaignPage({ params }: EditCampaignPageProps) {
+  const { id } = use(params)
   const router = useRouter()
 
+  const [loading, setLoading] = useState(true)
+  const [campaign, setCampaign] = useState<Campaign | null>(null)
   const [clients, setClients] = useState<Client[]>([])
   const [selectedClientId, setSelectedClientId] = useState('')
   const [subject, setSubject] = useState('')
@@ -63,10 +70,9 @@ export default function AdminNewCampaignPage() {
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
   const [scheduledDate, setScheduledDate] = useState('')
   const [scheduledTime, setScheduledTime] = useState('09:00')
-  const [loadingClients, setLoadingClients] = useState(true)
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
-  const [editorKey, setEditorKey] = useState(0) // To force re-render editor when template changes
+  const [editorKey, setEditorKey] = useState(0)
 
   const [audience, setAudience] = useState<{
     type: AudienceType
@@ -78,8 +84,43 @@ export default function AdminNewCampaignPage() {
   })
 
   useEffect(() => {
+    fetchCampaign()
     fetchClients()
-  }, [])
+  }, [id])
+
+  async function fetchCampaign() {
+    try {
+      const response = await fetch(`/api/campaigns/${id}`)
+      if (response.ok) {
+        const data = await response.json()
+        setCampaign(data)
+        setSelectedClientId(data.client_id)
+        setSubject(data.subject)
+        setPreviewText(data.preview_text || '')
+        setContentHtml(data.content_html)
+        setAudience({
+          type: data.audience_type || 'all',
+          listId: data.audience_list_id || undefined,
+          contactIds: data.audience_contact_ids || [],
+        })
+        if (data.scheduled_at) {
+          const date = new Date(data.scheduled_at)
+          setScheduledDate(format(date, 'yyyy-MM-dd'))
+          setScheduledTime(format(date, 'HH:mm'))
+        }
+      } else if (response.status === 404) {
+        toast.error('Campaign not found')
+        router.push('/admin-campaigns')
+      } else {
+        toast.error('Failed to load campaign')
+      }
+    } catch (error) {
+      console.error('Error fetching campaign:', error)
+      toast.error('Failed to load campaign')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function fetchClients() {
     try {
@@ -90,9 +131,6 @@ export default function AdminNewCampaignPage() {
       }
     } catch (error) {
       console.error('Error fetching clients:', error)
-      toast.error('Failed to load clients')
-    } finally {
-      setLoadingClients(false)
     }
   }
 
@@ -103,22 +141,11 @@ export default function AdminNewCampaignPage() {
   function handleTemplateSelect(template: Template) {
     setSelectedTemplate(template)
     setContentHtml(template.content_html)
-    setEditorKey(prev => prev + 1) // Force editor re-render with new content
+    setEditorKey(prev => prev + 1)
     toast.success(`Loaded template: ${template.name}`)
   }
 
-  function handleStartFromScratch() {
-    setSelectedTemplate(null)
-    setContentHtml('')
-    setEditorKey(prev => prev + 1)
-  }
-
-  async function saveCampaign(status: 'draft' | 'approved' | 'scheduled', scheduledAt?: string) {
-    if (!selectedClientId) {
-      toast.error('Please select a client')
-      return
-    }
-
+  async function saveCampaign(status?: string, scheduledAt?: string) {
     if (!subject.trim()) {
       toast.error('Please enter a subject line')
       return
@@ -136,45 +163,46 @@ export default function AdminNewCampaignPage() {
 
     setSaving(true)
     try {
-      const response = await fetch('/api/campaigns', {
-        method: 'POST',
+      const updateData: Record<string, unknown> = {
+        subject: subject.trim(),
+        preview_text: previewText.trim() || null,
+        content_html: contentHtml,
+        template_id: selectedTemplate?.id || campaign?.template_id || null,
+        audience_type: audience.type,
+        audience_list_id: audience.listId || null,
+        audience_contact_ids: audience.contactIds,
+      }
+
+      if (status) {
+        updateData.status = status
+      }
+      if (scheduledAt) {
+        updateData.scheduled_at = scheduledAt
+      }
+
+      const response = await fetch(`/api/campaigns/${id}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client_id: selectedClientId,
-          subject: subject.trim(),
-          preview_text: previewText.trim() || null,
-          content_html: contentHtml,
-          template_id: selectedTemplate?.id || null,
-          status,
-          scheduled_at: scheduledAt || null,
-          audience_type: audience.type,
-          audience_list_id: audience.listId || null,
-          audience_contact_ids: audience.contactIds,
-        }),
+        body: JSON.stringify(updateData),
       })
 
       if (response.ok) {
-        const statusMessages = {
-          draft: 'Campaign saved as draft',
-          approved: 'Campaign created and approved',
-          scheduled: 'Campaign scheduled successfully',
-        }
-        toast.success(statusMessages[status])
+        toast.success('Campaign updated')
         router.push('/admin-campaigns')
       } else {
         const data = await response.json()
-        toast.error(data.error || 'Failed to save campaign')
+        toast.error(data.error || 'Failed to update campaign')
       }
     } catch (error) {
-      console.error('Error saving campaign:', error)
-      toast.error('Failed to save campaign')
+      console.error('Error updating campaign:', error)
+      toast.error('Failed to update campaign')
     } finally {
       setSaving(false)
     }
   }
 
-  function handleSaveDraft() {
-    saveCampaign('draft')
+  function handleSave() {
+    saveCampaign()
   }
 
   function handleSchedule() {
@@ -188,15 +216,31 @@ export default function AdminNewCampaignPage() {
     saveCampaign('scheduled', scheduledAt)
   }
 
-  function handleApproveAndSave() {
+  function handleApprove() {
     saveCampaign('approved')
   }
 
-  const isFormValid = selectedClientId && subject.trim() && contentHtml.trim()
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header title="Edit Campaign" />
+        <div className="flex items-center justify-center h-[60vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-black/30" />
+        </div>
+      </div>
+    )
+  }
+
+  if (!campaign) {
+    return null
+  }
+
+  const isFormValid = subject.trim() && contentHtml.trim()
+  const canEdit = !['sent', 'sending'].includes(campaign.status)
 
   return (
     <div className="min-h-screen bg-white">
-      <Header title="Create Campaign" />
+      <Header title="Edit Campaign" />
 
       <div className="px-6 py-6 space-y-6">
         {/* Back Button */}
@@ -211,37 +255,21 @@ export default function AdminNewCampaignPage() {
           </Link>
         </Button>
 
+        {!canEdit && (
+          <div className="bg-amber-50 border border-amber-200 rounded p-4 text-amber-800">
+            This campaign has been sent and cannot be edited.
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Column - Campaign Settings */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Client Selection */}
+            {/* Client (read-only) */}
             <div className="border border-[#E0E0E0] rounded p-6 space-y-4">
-              <h3 className="font-semibold text-black">Select Client</h3>
-
-              <div className="space-y-2">
-                <Label htmlFor="client" className="text-black font-medium">
-                  Client Account *
-                </Label>
-                {loadingClients ? (
-                  <div className="flex items-center gap-2 text-black/50">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading clients...
-                  </div>
-                ) : (
-                  <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-                    <SelectTrigger className="bg-white border-[#E0E0E0]">
-                      <SelectValue placeholder="Select a client..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {clients.map((client) => (
-                        <SelectItem key={client.id} value={client.id}>
-                          {client.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
+              <h3 className="font-semibold text-black">Client</h3>
+              <p className="text-black/70">
+                {clients.find(c => c.id === selectedClientId)?.name || 'Loading...'}
+              </p>
             </div>
 
             {/* Campaign Details */}
@@ -257,7 +285,8 @@ export default function AdminNewCampaignPage() {
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Enter your email subject..."
-                  className="bg-white border-[#E0E0E0] text-black placeholder:text-black/40 focus:border-[#083E33] focus:ring-[#083E33]/20"
+                  disabled={!canEdit}
+                  className="bg-white border-[#E0E0E0] text-black placeholder:text-black/40 focus:border-[#083E33] focus:ring-[#083E33]/20 disabled:opacity-50"
                 />
               </div>
 
@@ -270,22 +299,27 @@ export default function AdminNewCampaignPage() {
                   value={previewText}
                   onChange={(e) => setPreviewText(e.target.value)}
                   placeholder="Text shown in inbox preview..."
-                  className="bg-white border-[#E0E0E0] text-black placeholder:text-black/40 focus:border-[#083E33] focus:ring-[#083E33]/20"
+                  disabled={!canEdit}
+                  className="bg-white border-[#E0E0E0] text-black placeholder:text-black/40 focus:border-[#083E33] focus:ring-[#083E33]/20 disabled:opacity-50"
                 />
-                <p className="text-xs text-black/50">
-                  This appears next to your subject line in the inbox
-                </p>
               </div>
             </div>
 
             {/* Audience Selection */}
             <div className="border border-[#E0E0E0] rounded p-6 space-y-4">
               <h3 className="font-semibold text-black">Audience</h3>
-              <AudienceSelector
-                clientId={selectedClientId}
-                value={audience}
-                onChange={setAudience}
-              />
+              {canEdit ? (
+                <AudienceSelector
+                  clientId={selectedClientId}
+                  value={audience}
+                  onChange={setAudience}
+                />
+              ) : (
+                <p className="text-black/70">
+                  {audience.type === 'all' && 'Everyone'}
+                  {audience.type === 'custom' && `${audience.contactIds.length} contacts selected`}
+                </p>
+              )}
             </div>
 
             {/* Actions */}
@@ -301,39 +335,37 @@ export default function AdminNewCampaignPage() {
                 {showPreview ? 'Hide Preview' : 'Show Preview'}
               </Button>
 
-              <Button
-                onClick={handleSaveDraft}
-                variant="outline"
-                className="w-full border-[#E0E0E0] text-black hover:bg-black/5 font-medium"
-                disabled={saving || !selectedClientId}
-              >
-                {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                Save as Draft
-              </Button>
+              {canEdit && (
+                <>
+                  <Button
+                    onClick={handleSave}
+                    variant="outline"
+                    className="w-full border-[#E0E0E0] text-black hover:bg-black/5 font-medium"
+                    disabled={saving || !isFormValid}
+                  >
+                    {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                    Save Changes
+                  </Button>
 
-              <Button
-                onClick={() => setScheduleDialogOpen(true)}
-                variant="outline"
-                className="w-full border-[#E0E0E0] text-black hover:bg-black/5 font-medium"
-                disabled={!isFormValid}
-              >
-                <Calendar className="h-4 w-4 mr-2" />
-                Schedule
-              </Button>
+                  <Button
+                    onClick={() => setScheduleDialogOpen(true)}
+                    variant="outline"
+                    className="w-full border-[#E0E0E0] text-black hover:bg-black/5 font-medium"
+                    disabled={!isFormValid}
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Schedule
+                  </Button>
 
-              <Button
-                onClick={handleApproveAndSave}
-                className="w-full bg-[#083E33] hover:bg-[#062d25] text-white font-medium"
-                disabled={!isFormValid || saving}
-              >
-                {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Approve & Save
-              </Button>
-
-              {!isFormValid && (
-                <p className="text-xs text-black/50 text-center">
-                  Select a client and add subject & content
-                </p>
+                  <Button
+                    onClick={handleApprove}
+                    className="w-full bg-[#083E33] hover:bg-[#062d25] text-white font-medium"
+                    disabled={!isFormValid || saving}
+                  >
+                    {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Approve & Save
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -341,34 +373,18 @@ export default function AdminNewCampaignPage() {
           {/* Right Column - Editor */}
           <div className="lg:col-span-3 space-y-4">
             {/* Template Selection Buttons */}
-            <div className="flex gap-3">
-              <Button
-                onClick={handleStartFromScratch}
-                variant={!selectedTemplate ? 'default' : 'outline'}
-                className={cn(
-                  'flex-1',
-                  !selectedTemplate
-                    ? 'bg-[#083E33] hover:bg-[#062d25] text-white'
-                    : 'border-[#E0E0E0] text-black hover:bg-black/5'
-                )}
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                Start from scratch
-              </Button>
-              <Button
-                onClick={() => setTemplatePickerOpen(true)}
-                variant={selectedTemplate ? 'default' : 'outline'}
-                className={cn(
-                  'flex-1',
-                  selectedTemplate
-                    ? 'bg-[#083E33] hover:bg-[#062d25] text-white'
-                    : 'border-[#E0E0E0] text-black hover:bg-black/5'
-                )}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                {selectedTemplate ? `Template: ${selectedTemplate.name}` : 'Choose a template'}
-              </Button>
-            </div>
+            {canEdit && (
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setTemplatePickerOpen(true)}
+                  variant="outline"
+                  className="border-[#E0E0E0] text-black hover:bg-black/5"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Load Different Template
+                </Button>
+              </div>
+            )}
 
             {showPreview ? (
               /* Preview Panel */
@@ -429,14 +445,28 @@ export default function AdminNewCampaignPage() {
                   </div>
                 </div>
               </div>
-            ) : (
+            ) : canEdit ? (
               /* GrapesJS Editor */
               <div className="border border-[#E0E0E0] rounded overflow-hidden h-[700px]">
                 <TemplateEditor
                   key={editorKey}
+                  initialContent={campaign.content_html}
                   onChange={handleContentChange}
-                  initialContent={contentHtml}
                 />
+              </div>
+            ) : (
+              /* Read-only view for sent campaigns */
+              <div className="border border-[#E0E0E0] rounded overflow-hidden">
+                <div className="p-4 bg-[#F5F5F5] min-h-[600px] flex items-start justify-center">
+                  <div className="bg-white rounded shadow-sm overflow-hidden w-full max-w-[700px]">
+                    <iframe
+                      srcDoc={contentHtml}
+                      className="w-full h-[560px] border-0"
+                      title="Email Content"
+                      sandbox="allow-same-origin"
+                    />
+                  </div>
+                </div>
               </div>
             )}
           </div>

@@ -75,7 +75,18 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { client_id, subject, preview_text, content_html, template_id, scheduled_at, status } = body
+    const {
+      client_id,
+      subject,
+      preview_text,
+      content_html,
+      template_id,
+      scheduled_at,
+      status,
+      audience_type,
+      audience_list_id,
+      audience_contact_ids,
+    } = body
 
     if (!client_id || !subject || !content_html) {
       return NextResponse.json(
@@ -102,6 +113,9 @@ export async function POST(request: Request) {
       scheduled_at: scheduled_at || null,
       status: status || 'draft',
       created_by: user?.id || null,
+      audience_type: audience_type || 'all',
+      audience_list_id: audience_list_id || null,
+      audience_contact_ids: audience_contact_ids || [],
     }
 
     const { data: campaign, error } = await supabase
@@ -122,7 +136,11 @@ export async function POST(request: Request) {
       action: 'campaign_created',
       entity_type: 'campaign',
       entity_id: campaign.id,
-      metadata: { subject, status: campaignData.status },
+      metadata: {
+        subject,
+        status: campaignData.status,
+        audience_type: campaignData.audience_type,
+      },
     })
 
     return NextResponse.json(campaign, { status: 201 })

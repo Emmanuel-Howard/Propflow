@@ -98,6 +98,9 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (body.template_id !== undefined) updateData.template_id = body.template_id
     if (body.scheduled_at !== undefined) updateData.scheduled_at = body.scheduled_at
     if (body.status !== undefined) updateData.status = body.status
+    if (body.audience_type !== undefined) updateData.audience_type = body.audience_type
+    if (body.audience_list_id !== undefined) updateData.audience_list_id = body.audience_list_id
+    if (body.audience_contact_ids !== undefined) updateData.audience_contact_ids = body.audience_contact_ids
 
     // Handle approval
     if (body.status === 'approved' && existingCampaign.status !== 'approved') {

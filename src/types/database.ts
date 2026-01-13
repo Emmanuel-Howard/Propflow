@@ -11,6 +11,7 @@ export type ClientStatus = 'active' | 'inactive' | 'suspended'
 export type ContactStatus = 'active' | 'unsubscribed' | 'bounced' | 'complained'
 export type CampaignStatus = 'draft' | 'pending_approval' | 'approved' | 'scheduled' | 'sending' | 'sent' | 'failed' | 'cancelled'
 export type SendLogStatus = 'queued' | 'sent' | 'delivered' | 'opened' | 'clicked' | 'bounced' | 'complained' | 'failed'
+export type AudienceType = 'all' | 'list' | 'custom'
 
 export interface Database {
   public: {
@@ -193,6 +194,9 @@ export interface Database {
           approved_by: string | null
           rejection_reason: string | null
           created_by: string | null
+          audience_type: AudienceType
+          audience_list_id: string | null
+          audience_contact_ids: string[]
           created_at: string
           updated_at: string
         }
@@ -210,6 +214,9 @@ export interface Database {
           approved_by?: string | null
           rejection_reason?: string | null
           created_by?: string | null
+          audience_type?: AudienceType
+          audience_list_id?: string | null
+          audience_contact_ids?: string[]
           created_at?: string
           updated_at?: string
         }
@@ -227,6 +234,9 @@ export interface Database {
           approved_by?: string | null
           rejection_reason?: string | null
           created_by?: string | null
+          audience_type?: AudienceType
+          audience_list_id?: string | null
+          audience_contact_ids?: string[]
           created_at?: string
           updated_at?: string
         }
@@ -546,6 +556,50 @@ export interface Database {
           }
         ]
       }
+      contact_lists: {
+        Row: {
+          id: string
+          client_id: string
+          name: string
+          description: string | null
+          filter_criteria: Json
+          contact_count: number
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id: string
+          name: string
+          description?: string | null
+          filter_criteria?: Json
+          contact_count?: number
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string
+          name?: string
+          description?: string | null
+          filter_criteria?: Json
+          contact_count?: number
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_lists_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -600,3 +654,8 @@ export type CampaignWithAnalytics = Campaign & {
 export type CampaignWithClient = Campaign & {
   client: Client
 }
+
+// Contact List types (for future audience targeting feature)
+export type ContactList = Database['public']['Tables']['contact_lists']['Row']
+export type ContactListInsert = Database['public']['Tables']['contact_lists']['Insert']
+export type ContactListUpdate = Database['public']['Tables']['contact_lists']['Update']
