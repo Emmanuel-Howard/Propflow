@@ -1,8 +1,10 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ContactPicker } from './contact-picker'
+import { ContactListPicker } from '@/components/contact-lists/contact-list-picker'
 import { Users, List, UserCheck } from 'lucide-react'
 import type { AudienceType } from '@/types/database'
 
@@ -10,6 +12,7 @@ interface AudienceValue {
   type: AudienceType
   listId?: string
   contactIds: string[]
+  listContactCount?: number
 }
 
 interface AudienceSelectorProps {
@@ -25,6 +28,9 @@ export function AudienceSelector({ clientId, value, onChange }: AudienceSelector
       type,
       // Reset contactIds when switching away from custom
       contactIds: type === 'custom' ? value.contactIds : [],
+      // Reset listId when switching away from list
+      listId: type === 'list' ? value.listId : undefined,
+      listContactCount: type === 'list' ? value.listContactCount : undefined,
     })
   }
 
@@ -32,6 +38,14 @@ export function AudienceSelector({ clientId, value, onChange }: AudienceSelector
     onChange({
       ...value,
       contactIds,
+    })
+  }
+
+  function handleListChange(listId: string, contactCount: number) {
+    onChange({
+      ...value,
+      listId,
+      listContactCount: contactCount,
     })
   }
 
@@ -59,19 +73,16 @@ export function AudienceSelector({ clientId, value, onChange }: AudienceSelector
           </Label>
         </div>
 
-        {/* Custom List option (coming soon) */}
-        <div className="flex items-start space-x-3 opacity-50">
-          <RadioGroupItem value="list" id="audience-list" disabled className="mt-0.5" />
+        {/* Custom List option */}
+        <div className="flex items-start space-x-3">
+          <RadioGroupItem value="list" id="audience-list" className="mt-0.5" />
           <Label
             htmlFor="audience-list"
-            className="flex-1 cursor-not-allowed font-normal"
+            className="flex-1 cursor-pointer font-normal"
           >
             <div className="flex items-center gap-2">
               <List className="h-4 w-4 text-black/60" />
               <span className="font-medium text-black">Custom List</span>
-              <span className="text-xs bg-black/10 text-black/50 px-2 py-0.5 rounded">
-                Coming soon
-              </span>
             </div>
             <p className="text-xs text-black/50 mt-1">
               Send to a saved contact segment
@@ -96,6 +107,22 @@ export function AudienceSelector({ clientId, value, onChange }: AudienceSelector
           </Label>
         </div>
       </RadioGroup>
+
+      {/* List picker when list is selected */}
+      {value.type === 'list' && clientId && (
+        <div className="ml-7 pt-2">
+          <ContactListPicker
+            clientId={clientId}
+            value={value.listId}
+            onChange={handleListChange}
+          />
+          {value.listId && value.listContactCount !== undefined && (
+            <p className="text-xs text-black/50 mt-2">
+              Campaign will be sent to {value.listContactCount.toLocaleString()} contact{value.listContactCount !== 1 ? 's' : ''} in this list
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Contact picker when custom is selected */}
       {value.type === 'custom' && clientId && (

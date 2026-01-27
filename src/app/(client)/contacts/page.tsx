@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
   DialogContent,
@@ -34,10 +35,12 @@ import {
   AlertCircle,
   X,
   Users,
+  List,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { ContactListsTab } from '@/components/contact-lists/contact-lists-tab'
 import type { Contact } from '@/types/database'
 
 interface ContactsResponse {
@@ -67,6 +70,7 @@ export default function ContactsPage() {
   const searchParams = useSearchParams()
   const clientId = searchParams.get('client_id')
 
+  const [activeTab, setActiveTab] = useState('contacts')
   const [contacts, setContacts] = useState<Contact[]>([])
   const [stats, setStats] = useState({ total: 0, active: 0, unsubscribed: 0, newThisMonth: 0 })
   const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, totalPages: 0 })
@@ -303,220 +307,246 @@ export default function ContactsPage() {
       <Header title="Contacts" />
 
       <div className="px-6 py-6 space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pb-6 border-b border-[#E0E0E0]">
-          <div>
-            <p className="text-xs text-black/50 uppercase tracking-wider font-medium">
-              Total Contacts
-            </p>
-            <p className="text-2xl font-semibold text-black tabular-nums mt-1">
-              {stats.total.toLocaleString()}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-black/50 uppercase tracking-wider font-medium">
-              Active
-            </p>
-            <p className="text-2xl font-semibold text-black tabular-nums mt-1">
-              {stats.active.toLocaleString()}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-black/50 uppercase tracking-wider font-medium">
-              New This Month
-            </p>
-            <p className="text-2xl font-semibold text-black tabular-nums mt-1">
-              {stats.newThisMonth.toLocaleString()}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-black/50 uppercase tracking-wider font-medium">
-              Unsubscribed
-            </p>
-            <p className="text-2xl font-semibold text-black tabular-nums mt-1">
-              {stats.unsubscribed.toLocaleString()}
-            </p>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-between">
-          <div className="flex items-center gap-4 flex-1">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/40" />
-              <Input
-                placeholder="Search contacts..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-white border-[#E0E0E0] text-black placeholder:text-black/40 focus:border-[#083E33] focus:ring-[#083E33]/20"
-              />
-            </div>
-            {selectedIds.length > 0 && (
-              <Button
-                variant="outline"
-                onClick={handleBulkDelete}
-                className="border-red-200 text-red-600 hover:bg-red-50"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete ({selectedIds.length})
-              </Button>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setUploadDialogOpen(true)}
-              className="border-[#E0E0E0] text-black hover:bg-black/5 font-medium transition-smooth"
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="bg-[#FAFAFA] border border-[#E0E0E0]">
+            <TabsTrigger
+              value="contacts"
+              className="data-[state=active]:bg-white data-[state=active]:text-black"
             >
-              <Upload className="h-4 w-4 mr-2" />
-              Import CSV
-            </Button>
-            <Button
-              onClick={() => setAddDialogOpen(true)}
-              className="bg-white border border-[#E0E0E0] text-black hover:bg-black/5 hover:shadow-sm font-medium transition-smooth"
+              <Users className="h-4 w-4 mr-2" />
+              All Contacts
+            </TabsTrigger>
+            <TabsTrigger
+              value="lists"
+              className="data-[state=active]:bg-white data-[state=active]:text-black"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Contact
-            </Button>
-          </div>
-        </div>
+              <List className="h-4 w-4 mr-2" />
+              Lists
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Contacts Table */}
-        <div className="border border-[#E0E0E0] rounded overflow-hidden">
-          {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="h-6 w-6 animate-spin text-black/40" />
+          <TabsContent value="contacts" className="mt-6 space-y-6">
+            {/* Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pb-6 border-b border-[#E0E0E0]">
+              <div>
+                <p className="text-xs text-black/50 uppercase tracking-wider font-medium">
+                  Total Contacts
+                </p>
+                <p className="text-2xl font-semibold text-black tabular-nums mt-1">
+                  {stats.total.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-black/50 uppercase tracking-wider font-medium">
+                  Active
+                </p>
+                <p className="text-2xl font-semibold text-black tabular-nums mt-1">
+                  {stats.active.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-black/50 uppercase tracking-wider font-medium">
+                  New This Month
+                </p>
+                <p className="text-2xl font-semibold text-black tabular-nums mt-1">
+                  {stats.newThisMonth.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-black/50 uppercase tracking-wider font-medium">
+                  Unsubscribed
+                </p>
+                <p className="text-2xl font-semibold text-black tabular-nums mt-1">
+                  {stats.unsubscribed.toLocaleString()}
+                </p>
+              </div>
             </div>
-          ) : contacts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-black/40">
-              <Users className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-lg font-medium text-black/60">No contacts yet</p>
-              <p className="text-sm mt-1 mb-4">
-                Add contacts manually or import from CSV
-              </p>
+
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/40" />
+                  <Input
+                    placeholder="Search contacts..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-white border-[#E0E0E0] text-black placeholder:text-black/40 focus:border-[#083E33] focus:ring-[#083E33]/20"
+                  />
+                </div>
+                {selectedIds.length > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={handleBulkDelete}
+                    className="border-red-200 text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete ({selectedIds.length})
+                  </Button>
+                )}
+              </div>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setUploadDialogOpen(true)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setUploadDialogOpen(true)}
+                  className="border-[#E0E0E0] text-black hover:bg-black/5 font-medium transition-smooth"
+                >
                   <Upload className="h-4 w-4 mr-2" />
                   Import CSV
                 </Button>
-                <Button onClick={() => setAddDialogOpen(true)}>
+                <Button
+                  onClick={() => setAddDialogOpen(true)}
+                  className="bg-white border border-[#E0E0E0] text-black hover:bg-black/5 hover:shadow-sm font-medium transition-smooth"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Contact
                 </Button>
               </div>
             </div>
-          ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="bg-[#FAFAFA]">
-                  <th className="w-12 px-4 py-3">
-                    <Checkbox
-                      checked={selectedIds.length === contacts.length && contacts.length > 0}
-                      onCheckedChange={toggleSelectAll}
-                      className="border-[#E0E0E0]"
-                    />
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-black/60">Email</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-black/60">Name</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-black/60">Status</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-black/60">Added</th>
-                  <th className="w-12 px-4 py-3"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {contacts.map((contact) => {
-                  const status = statusConfig[contact.status] || statusConfig.active
-                  return (
-                    <tr
-                      key={contact.id}
-                      className="border-t border-[#E0E0E0] hover:bg-black/[0.01] transition-smooth"
-                    >
-                      <td className="px-4 py-3">
+
+            {/* Contacts Table */}
+            <div className="border border-[#E0E0E0] rounded overflow-hidden">
+              {loading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="h-6 w-6 animate-spin text-black/40" />
+                </div>
+              ) : contacts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-black/40">
+                  <Users className="h-12 w-12 mb-4 opacity-50" />
+                  <p className="text-lg font-medium text-black/60">No contacts yet</p>
+                  <p className="text-sm mt-1 mb-4">
+                    Add contacts manually or import from CSV
+                  </p>
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setUploadDialogOpen(true)}>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Import CSV
+                    </Button>
+                    <Button onClick={() => setAddDialogOpen(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Contact
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-[#FAFAFA]">
+                      <th className="w-12 px-4 py-3">
                         <Checkbox
-                          checked={selectedIds.includes(contact.id)}
-                          onCheckedChange={() => toggleSelect(contact.id)}
+                          checked={selectedIds.length === contacts.length && contacts.length > 0}
+                          onCheckedChange={toggleSelectAll}
                           className="border-[#E0E0E0]"
                         />
-                      </td>
-                      <td className="px-4 py-3 font-medium text-black">
-                        {contact.email}
-                      </td>
-                      <td className="px-4 py-3 text-black/70">
-                        {contact.first_name || contact.last_name
-                          ? `${contact.first_name || ''} ${contact.last_name || ''}`.trim()
-                          : '—'}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`text-sm font-medium ${status.className}`}>
-                          {status.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-black/60">
-                        {format(new Date(contact.created_at), 'MMM d, yyyy')}
-                      </td>
-                      <td className="px-4 py-3">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0 text-black/40 hover:text-black"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openEditDialog(contact)}>
-                              <Pencil className="h-4 w-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteContact(contact.id)}
-                              className="text-red-600 focus:text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-black/60">Email</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-black/60">Name</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-black/60">Status</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-black/60">Added</th>
+                      <th className="w-12 px-4 py-3"></th>
                     </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* Pagination */}
-        {pagination.totalPages > 1 && (
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-black/50">
-              Showing {((pagination.page - 1) * pagination.limit) + 1}-
-              {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
-              {pagination.total.toLocaleString()} contacts
-            </p>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={pagination.page === 1}
-                onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
-                className="border-[#E0E0E0] text-black hover:bg-black/5 transition-smooth disabled:text-black/30"
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={pagination.page >= pagination.totalPages}
-                onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
-                className="border-[#E0E0E0] text-black hover:bg-black/5 transition-smooth disabled:text-black/30"
-              >
-                Next
-              </Button>
+                  </thead>
+                  <tbody>
+                    {contacts.map((contact) => {
+                      const status = statusConfig[contact.status] || statusConfig.active
+                      return (
+                        <tr
+                          key={contact.id}
+                          className="border-t border-[#E0E0E0] hover:bg-black/[0.01] transition-smooth"
+                        >
+                          <td className="px-4 py-3">
+                            <Checkbox
+                              checked={selectedIds.includes(contact.id)}
+                              onCheckedChange={() => toggleSelect(contact.id)}
+                              className="border-[#E0E0E0]"
+                            />
+                          </td>
+                          <td className="px-4 py-3 font-medium text-black">
+                            {contact.email}
+                          </td>
+                          <td className="px-4 py-3 text-black/70">
+                            {contact.first_name || contact.last_name
+                              ? `${contact.first_name || ''} ${contact.last_name || ''}`.trim()
+                              : '—'}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`text-sm font-medium ${status.className}`}>
+                              {status.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-black/60">
+                            {format(new Date(contact.created_at), 'MMM d, yyyy')}
+                          </td>
+                          <td className="px-4 py-3">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-black/40 hover:text-black"
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => openEditDialog(contact)}>
+                                  <Pencil className="h-4 w-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteContact(contact.id)}
+                                  className="text-red-600 focus:text-red-600"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              )}
             </div>
-          </div>
-        )}
+
+            {/* Pagination */}
+            {pagination.totalPages > 1 && (
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-black/50">
+                  Showing {((pagination.page - 1) * pagination.limit) + 1}-
+                  {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
+                  {pagination.total.toLocaleString()} contacts
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={pagination.page === 1}
+                    onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
+                    className="border-[#E0E0E0] text-black hover:bg-black/5 transition-smooth disabled:text-black/30"
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={pagination.page >= pagination.totalPages}
+                    onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
+                    className="border-[#E0E0E0] text-black hover:bg-black/5 transition-smooth disabled:text-black/30"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="lists" className="mt-6">
+            {clientId && <ContactListsTab clientId={clientId} />}
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Add/Edit Contact Dialog */}

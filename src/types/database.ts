@@ -655,7 +655,50 @@ export type CampaignWithClient = Campaign & {
   client: Client
 }
 
-// Contact List types (for future audience targeting feature)
+// Contact List types
 export type ContactList = Database['public']['Tables']['contact_lists']['Row']
 export type ContactListInsert = Database['public']['Tables']['contact_lists']['Insert']
 export type ContactListUpdate = Database['public']['Tables']['contact_lists']['Update']
+
+// Filter criteria types for contact list segmentation
+export type FilterField = 'status' | 'tags' | 'source' | 'created_at'
+export type FilterOperator = 'equals' | 'not_equals' | 'contains' | 'in' | 'before' | 'after'
+
+export interface FilterCondition {
+  id: string
+  field: FilterField
+  operator: FilterOperator
+  value: string | string[]
+}
+
+export interface FilterCriteria {
+  operator: 'AND' | 'OR'
+  conditions: FilterCondition[]
+}
+
+export type ContactListWithCount = ContactList & {
+  contact_count: number
+}
+
+// Email Preference Types
+export type EmailFrequency = 'all' | 'weekly' | 'monthly' | 'important_only'
+export type UnsubscribeSource = 'link' | 'one_click' | 'preference_center' | 'admin'
+
+export interface EmailCategories {
+  newsletters: boolean
+  tips: boolean
+  promotions: boolean
+}
+
+// Unsubscribe token payload
+export interface UnsubscribeTokenPayload {
+  contactId: string
+  campaignId: string
+  timestamp: number
+}
+
+// Contact preference data for preference center
+export interface ContactPreferences {
+  email_frequency: EmailFrequency
+  email_categories: EmailCategories
+}
