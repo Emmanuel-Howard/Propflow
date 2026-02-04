@@ -15,4 +15,7 @@ It helps improve client acquisition and retention through newsletters and automa
 
 All emails are automatically triggered based on pipeline status, ensuring communication without manual follow-ups.
 
+## Platform
+Here is a screenshot of the current overview from admin view (with placeholder data).
+
 <img width="1720" height="472" alt="image" src="https://github.com/user-attachments/assets/13d15c7c-4192-4c3e-a1a1-df8aae293d85" />
